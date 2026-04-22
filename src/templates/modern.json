@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "page": { "width": 794, "height": 1123, "background": "#ffffff" },
+  "order": ["s_side", "t_name", "t_title", "t_contact_h", "t_contact", "t_skill_h", "t_skill", "t_exp_h", "t_exp1_role", "t_exp1_date", "t_exp1_desc", "t_edu_h", "t_edu"],
+  "nodes": {
+    "s_side":     { "id":"s_side","type":"shape","name":"侧栏","x":0,"y":0,"w":260,"h":1123,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"shape":"rect","fill":"#1f2937","stroke":"transparent","strokeWidth":0,"dash":[],"cornerRadius":0 },
+    "t_name":     { "id":"t_name","type":"text","name":"姓名","x":24,"y":60,"w":212,"h":40,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"李四","color":"#ffffff"}],"align":"left","lineHeight":1.2,"fontFamily":"\"PingFang SC\"","fontSize":32,"color":"#ffffff" },
+    "t_title":    { "id":"t_title","type":"text","name":"职位","x":24,"y":104,"w":212,"h":24,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"产品设计师","color":"#9ca3af"}],"align":"left","lineHeight":1.2,"fontFamily":"\"PingFang SC\"","fontSize":15,"color":"#9ca3af" },
+    "t_contact_h":{ "id":"t_contact_h","type":"text","name":"联系标题","x":24,"y":160,"w":212,"h":22,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"联系","color":"#4f46e5","bold":true}],"align":"left","lineHeight":1.2,"fontFamily":"\"PingFang SC\"","fontSize":14,"color":"#4f46e5" },
+    "t_contact":  { "id":"t_contact","type":"text","name":"联系","x":24,"y":184,"w":212,"h":90,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"lisi@example.com\n139-0000-0000\n上海","color":"#e5e7eb"}],"align":"left","lineHeight":1.7,"fontFamily":"\"PingFang SC\"","fontSize":12,"color":"#e5e7eb" },
+    "t_skill_h":  { "id":"t_skill_h","type":"text","name":"技能标题","x":24,"y":300,"w":212,"h":22,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"专业技能","color":"#4f46e5","bold":true}],"align":"left","lineHeight":1.2,"fontFamily":"\"PingFang SC\"","fontSize":14,"color":"#4f46e5" },
+    "t_skill":    { "id":"t_skill","type":"text","name":"技能","x":24,"y":326,"w":212,"h":120,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"Figma\nSketch\n用户研究\n原型设计\n可视化设计\n团队协作","color":"#e5e7eb"}],"align":"left","lineHeight":1.8,"fontFamily":"\"PingFang SC\"","fontSize":12,"color":"#e5e7eb" },
+
+    "t_exp_h":    { "id":"t_exp_h","type":"text","name":"经历标题","x":300,"y":60,"w":470,"h":32,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"工作经历"}],"align":"left","lineHeight":1.2,"fontFamily":"\"PingFang SC\"","fontSize":22,"color":"#1f2937" },
+    "t_exp1_role":{ "id":"t_exp1_role","type":"text","name":"职位1","x":300,"y":100,"w":320,"h":22,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"某设计公司 · 高级设计师","bold":true}],"align":"left","lineHeight":1.3,"fontFamily":"\"PingFang SC\"","fontSize":15,"color":"#111827" },
+    "t_exp1_date":{ "id":"t_exp1_date","type":"text","name":"时间1","x":620,"y":100,"w":150,"h":22,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"2020 - 至今"}],"align":"right","lineHeight":1.3,"fontFamily":"\"PingFang SC\"","fontSize":12,"color":"#6b7280" },
+    "t_exp1_desc":{ "id":"t_exp1_desc","type":"text","name":"描述1","x":300,"y":126,"w":470,"h":120,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"· 主导数款 SaaS 产品的视觉与交互设计\n· 建立公司设计系统，提升协作效率\n· 参与用户研究与产品策略制定"}],"align":"left","lineHeight":1.7,"fontFamily":"\"PingFang SC\"","fontSize":13,"color":"#374151" },
+
+    "t_edu_h":    { "id":"t_edu_h","type":"text","name":"教育标题","x":300,"y":270,"w":470,"h":32,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"教育经历"}],"align":"left","lineHeight":1.2,"fontFamily":"\"PingFang SC\"","fontSize":22,"color":"#1f2937" },
+    "t_edu":      { "id":"t_edu","type":"text","name":"教育","x":300,"y":310,"w":470,"h":40,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"某美术学院  视觉传达  本科  2015-2019"}],"align":"left","lineHeight":1.5,"fontFamily":"\"PingFang SC\"","fontSize":13,"color":"#374151" }
+  }
+}

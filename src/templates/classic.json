@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "page": { "width": 794, "height": 1123, "background": "#ffffff" },
+  "order": ["t_name", "t_title", "s_line", "t_contact", "t_exp_h", "s_bar1", "t_exp1_role", "t_exp1_date", "t_exp1_desc", "t_edu_h", "s_bar2", "t_edu1", "t_skill_h", "s_bar3", "t_skill1"],
+  "nodes": {
+    "t_name":     { "id":"t_name","type":"text","name":"姓名","x":60,"y":60,"w":674,"h":48,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"张三"}],"align":"left","lineHeight":1.2,"fontFamily":"\"PingFang SC\"","fontSize":36,"color":"#1f2937" },
+    "t_title":    { "id":"t_title","type":"text","name":"职位","x":60,"y":110,"w":674,"h":28,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"高级前端工程师"}],"align":"left","lineHeight":1.2,"fontFamily":"\"PingFang SC\"","fontSize":18,"color":"#6b7280" },
+    "s_line":     { "id":"s_line","type":"shape","name":"分隔线","x":60,"y":148,"w":674,"h":2,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"shape":"rect","fill":"#1f2937","stroke":"transparent","strokeWidth":0,"dash":[],"cornerRadius":0 },
+    "t_contact":  { "id":"t_contact","type":"text","name":"联系方式","x":60,"y":160,"w":674,"h":22,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"邮箱：zhangsan@example.com   ·   电话：138-0000-0000   ·   北京"}],"align":"left","lineHeight":1.4,"fontFamily":"\"PingFang SC\"","fontSize":13,"color":"#4b5563" },
+
+    "t_exp_h":    { "id":"t_exp_h","type":"text","name":"工作经历标题","x":60,"y":210,"w":200,"h":28,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"工作经历"}],"align":"left","lineHeight":1.2,"fontFamily":"\"PingFang SC\"","fontSize":20,"color":"#1f2937" },
+    "s_bar1":     { "id":"s_bar1","type":"shape","name":"小色块","x":60,"y":240,"w":40,"h":3,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"shape":"rect","fill":"#4f46e5","stroke":"transparent","strokeWidth":0,"dash":[],"cornerRadius":2 },
+
+    "t_exp1_role":{ "id":"t_exp1_role","type":"text","name":"职位1","x":60,"y":260,"w":400,"h":22,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"某科技公司 · 前端负责人","bold":true}],"align":"left","lineHeight":1.3,"fontFamily":"\"PingFang SC\"","fontSize":15,"color":"#111827" },
+    "t_exp1_date":{ "id":"t_exp1_date","type":"text","name":"时间1","x":460,"y":260,"w":274,"h":22,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"2021.06 - 至今"}],"align":"right","lineHeight":1.3,"fontFamily":"\"PingFang SC\"","fontSize":13,"color":"#6b7280" },
+    "t_exp1_desc":{ "id":"t_exp1_desc","type":"text","name":"描述1","x":60,"y":288,"w":674,"h":80,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"· 负责公司核心产品的前端架构设计与性能优化\n· 带领 5 人团队完成从 0 到 1 的重构项目\n· 推动 TypeScript、设计系统落地，开发效率提升 40%"}],"align":"left","lineHeight":1.6,"fontFamily":"\"PingFang SC\"","fontSize":13,"color":"#374151" },
+
+    "t_edu_h":    { "id":"t_edu_h","type":"text","name":"教育经历标题","x":60,"y":390,"w":200,"h":28,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"教育经历"}],"align":"left","lineHeight":1.2,"fontFamily":"\"PingFang SC\"","fontSize":20,"color":"#1f2937" },
+    "s_bar2":     { "id":"s_bar2","type":"shape","name":"小色块","x":60,"y":420,"w":40,"h":3,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"shape":"rect","fill":"#4f46e5","stroke":"transparent","strokeWidth":0,"dash":[],"cornerRadius":2 },
+    "t_edu1":     { "id":"t_edu1","type":"text","name":"学校","x":60,"y":438,"w":674,"h":40,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"某某大学  计算机科学与技术  本科  2013-2017"}],"align":"left","lineHeight":1.5,"fontFamily":"\"PingFang SC\"","fontSize":13,"color":"#374151" },
+
+    "t_skill_h":  { "id":"t_skill_h","type":"text","name":"技能标题","x":60,"y":500,"w":200,"h":28,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"专业技能"}],"align":"left","lineHeight":1.2,"fontFamily":"\"PingFang SC\"","fontSize":20,"color":"#1f2937" },
+    "s_bar3":     { "id":"s_bar3","type":"shape","name":"小色块","x":60,"y":530,"w":40,"h":3,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"shape":"rect","fill":"#4f46e5","stroke":"transparent","strokeWidth":0,"dash":[],"cornerRadius":2 },
+    "t_skill1":   { "id":"t_skill1","type":"text","name":"技能列表","x":60,"y":548,"w":674,"h":80,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"JavaScript / TypeScript / Vue / React / Node.js / Webpack / Vite\n性能优化 · 可视化 · Canvas / WebGL · 团队管理"}],"align":"left","lineHeight":1.6,"fontFamily":"\"PingFang SC\"","fontSize":13,"color":"#374151" }
+  }
+}

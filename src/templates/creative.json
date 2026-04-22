@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "page": { "width": 794, "height": 1123, "background": "#fff7ed" },
+  "order": ["s_header", "t_name", "t_title", "s_accent1", "t_about_h", "t_about", "s_accent2", "t_exp_h", "t_exp1", "t_edu_h", "t_edu"],
+  "nodes": {
+    "s_header":   { "id":"s_header","type":"shape","name":"顶部色块","x":0,"y":0,"w":794,"h":180,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"shape":"rect","fill":"#ea580c","stroke":"transparent","strokeWidth":0,"dash":[],"cornerRadius":0 },
+    "t_name":     { "id":"t_name","type":"text","name":"姓名","x":60,"y":60,"w":674,"h":52,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"王小明","color":"#ffffff"}],"align":"left","lineHeight":1.2,"fontFamily":"\"PingFang SC\"","fontSize":42,"color":"#ffffff" },
+    "t_title":    { "id":"t_title","type":"text","name":"职位","x":60,"y":116,"w":674,"h":28,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"创意品牌 / 插画师","color":"#ffedd5","italic":true}],"align":"left","lineHeight":1.2,"fontFamily":"\"PingFang SC\"","fontSize":18,"color":"#ffedd5" },
+    "s_accent1":  { "id":"s_accent1","type":"shape","name":"装饰圆","x":640,"y":-40,"w":200,"h":200,"rotation":0,"opacity":0.3,"locked":false,"visible":true,"parentId":null,"shape":"ellipse","fill":"#fb923c","stroke":"transparent","strokeWidth":0,"dash":[],"cornerRadius":0 },
+
+    "t_about_h":  { "id":"t_about_h","type":"text","name":"关于标题","x":60,"y":220,"w":674,"h":30,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"关于我","bold":true}],"align":"left","lineHeight":1.2,"fontFamily":"\"PingFang SC\"","fontSize":22,"color":"#9a3412" },
+    "t_about":    { "id":"t_about","type":"text","name":"关于","x":60,"y":256,"w":674,"h":70,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"5 年品牌视觉设计与插画经验，热爱用色彩讲故事。曾服务于多家知名品牌，擅长品牌调性的视觉落地。"}],"align":"left","lineHeight":1.7,"fontFamily":"\"PingFang SC\"","fontSize":14,"color":"#431407" },
+
+    "s_accent2":  { "id":"s_accent2","type":"shape","name":"分隔","x":60,"y":346,"w":80,"h":4,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"shape":"rect","fill":"#ea580c","stroke":"transparent","strokeWidth":0,"dash":[],"cornerRadius":2 },
+
+    "t_exp_h":    { "id":"t_exp_h","type":"text","name":"经历标题","x":60,"y":380,"w":674,"h":30,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"工作经历","bold":true}],"align":"left","lineHeight":1.2,"fontFamily":"\"PingFang SC\"","fontSize":22,"color":"#9a3412" },
+    "t_exp1":     { "id":"t_exp1","type":"text","name":"经历","x":60,"y":416,"w":674,"h":140,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"某创意工作室 · 首席插画师  2019.06 - 至今\n· 主导多个品牌的视觉形象与插画项目\n· 作品入选多项设计奖项\n\n自由插画师  2017 - 2019"}],"align":"left","lineHeight":1.7,"fontFamily":"\"PingFang SC\"","fontSize":13,"color":"#431407" },
+
+    "t_edu_h":    { "id":"t_edu_h","type":"text","name":"教育标题","x":60,"y":580,"w":674,"h":30,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"教育经历","bold":true}],"align":"left","lineHeight":1.2,"fontFamily":"\"PingFang SC\"","fontSize":22,"color":"#9a3412" },
+    "t_edu":      { "id":"t_edu","type":"text","name":"教育","x":60,"y":616,"w":674,"h":40,"rotation":0,"opacity":1,"locked":false,"visible":true,"parentId":null,"runs":[{"text":"中央美术学院  视觉传达  本科  2013-2017"}],"align":"left","lineHeight":1.5,"fontFamily":"\"PingFang SC\"","fontSize":13,"color":"#431407" }
+  }
+}
