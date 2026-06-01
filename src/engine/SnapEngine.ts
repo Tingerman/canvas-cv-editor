@@ -36,7 +36,7 @@ export function computeMoveSnap(
   const movingRefs = refsOf(combined);
 
   const movingIds = new Set(moving.map((n) => n.id));
-  const page = scene.doc.page;
+  const page = scene.currentPage().meta;
   const candXs: { value: number; from: number; to: number }[] = [
     { value: 0, from: 0, to: page.height },
     { value: page.width / 2, from: 0, to: page.height },
@@ -48,7 +48,7 @@ export function computeMoveSnap(
     { value: page.height, from: 0, to: page.width }
   ];
 
-  for (const id of scene.doc.order) {
+  for (const id of scene.topLevelOrder()) {
     if (movingIds.has(id)) continue;
     const n = scene.getNode(id);
     if (!n || !n.visible) continue;

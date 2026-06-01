@@ -6,6 +6,7 @@
       <div class="stage-area">
         <ToolBar />
         <CanvasStage class="stage" />
+        <PageTabs />
       </div>
       <PropertyPanel class="side right" />
     </div>
@@ -30,6 +31,7 @@ import CanvasStage from './components/CanvasStage.vue';
 import LayerPanel from './components/LayerPanel.vue';
 import PropertyPanel from './components/PropertyPanel.vue';
 import TemplateGallery from './components/TemplateGallery.vue';
+import PageTabs from './components/PageTabs.vue';
 import { useEditorStore } from './store/editor';
 import { loadDocument, saveDocument, debounce } from './services/persistence';
 import { restoreFonts } from './services/fontLoader';

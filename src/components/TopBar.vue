@@ -36,7 +36,7 @@ import { storeToRefs } from 'pinia';
 import { Undo2, Redo2, Plus, Minus } from 'lucide-vue-next';
 import { useEditorStore } from '@/store/editor';
 import { exportPNG, exportPDF, exportJSON } from '@/services/exporter';
-import { validateDocument } from '@/types/document';
+import { migrateDocument } from '@/types/document';
 
 const store = useEditorStore();
 const { zoom: zoomRef, doc } = storeToRefs(store);
@@ -76,11 +76,12 @@ function importJSON() {
     try {
       const text = await file.text();
       const obj = JSON.parse(text);
-      if (!validateDocument(obj)) {
+      const migrated = migrateDocument(obj);
+      if (!migrated) {
         toast?.('JSON 格式不合法', 'error');
         return;
       }
-      store.replaceDocument(obj, '导入 JSON');
+      store.replaceDocument(migrated, '导入 JSON');
       toast?.('导入成功');
     } catch (err) {
       toast?.('导入失败：' + (err as Error).message, 'error');

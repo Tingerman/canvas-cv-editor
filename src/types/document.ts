@@ -72,11 +72,17 @@ export interface Page {
   background: string;
 }
 
-export interface Document {
-  version: 1;
-  page: Page;
+export interface PageData {
+  id: string;
+  meta: Page;
   nodes: Record<string, AnyNode>;
   order: string[]; // top-level zIndex order (bottom -> top)
+}
+
+export interface Document {
+  version: 2;
+  pages: PageData[];
+  currentPageIndex: number;
 }
 
 // ----- factories -----
@@ -89,11 +95,62 @@ export const A4 = { width: 794, height: 1123 };
 
 export function createEmptyDocument(): Document {
   return {
-    version: 1,
-    page: { width: A4.width, height: A4.height, background: '#ffffff' },
-    nodes: {},
-    order: []
+    version: 2,
+    pages: [
+      {
+        id: uid('p'),
+        meta: { width: A4.width, height: A4.height, background: '#ffffff' },
+        nodes: {},
+        order: []
+      }
+    ],
+    currentPageIndex: 0
   };
+}
+
+/** Migrate a v1 document (or any raw object) to the current v2 format. */
+export function migrateDocument(raw: any): Document | null {
+  if (!raw || typeof raw !== 'object') return null;
+
+  // Already v2
+  if (raw.version === 2 && Array.isArray(raw.pages)) {
+    const doc = raw as Document;
+    // Clamp index — treat missing/out-of-range as first page
+    doc.currentPageIndex = Math.max(
+      0,
+      Math.min(doc.currentPageIndex ?? 0, doc.pages.length - 1)
+    );
+    // Backfill any page missing an id
+    for (const p of doc.pages) {
+      if (!p.id) p.id = uid('p');
+      if (!p.nodes) p.nodes = {};
+      if (!Array.isArray(p.order)) p.order = [];
+    }
+    return doc;
+  }
+
+  // v1-like: has page/nodes/order structure regardless of version field
+  // covers: version === 1, version missing entirely, version wrong
+  if (raw.page && typeof raw.page.width === 'number' && raw.nodes) {
+    return {
+      version: 2,
+      pages: [
+        {
+          id: uid('p'),
+          meta: {
+            width: raw.page.width,
+            height: raw.page.height ?? A4.height,
+            background: raw.page.background ?? '#ffffff'
+          },
+          nodes: raw.nodes ?? {},
+          order: Array.isArray(raw.order) ? raw.order : []
+        }
+      ],
+      currentPageIndex: 0
+    };
+  }
+
+  return null;
 }
 
 export function createNode(type: NodeType, overrides: Partial<AnyNode> = {}): AnyNode {
@@ -172,21 +229,25 @@ function defaultName(type: NodeType): string {
 export function validateDocument(obj: unknown): obj is Document {
   if (!obj || typeof obj !== 'object') return false;
   const d = obj as any;
-  if (d.version !== 1) return false;
-  if (!d.page || typeof d.page.width !== 'number' || typeof d.page.height !== 'number') return false;
-  if (!d.nodes || typeof d.nodes !== 'object') return false;
-  if (!Array.isArray(d.order)) return false;
-  for (const id of d.order) {
-    if (!d.nodes[id]) return false;
-  }
-  for (const id of Object.keys(d.nodes)) {
-    const n = d.nodes[id];
-    if (!n || typeof n.id !== 'string' || typeof n.type !== 'string') return false;
-    // Backfill group defaults for forward compatibility
-    if (n.type === 'group') {
-      if (!Array.isArray(n.children)) n.children = [];
-      if (typeof n.innerW !== 'number') n.innerW = n.w;
-      if (typeof n.innerH !== 'number') n.innerH = n.h;
+  if (d.version !== 2) return false;
+  if (!Array.isArray(d.pages) || d.pages.length === 0) return false;
+  if (typeof d.currentPageIndex !== 'number') return false;
+  for (const page of d.pages) {
+    if (!page.meta || typeof page.meta.width !== 'number' || typeof page.meta.height !== 'number') return false;
+    if (!page.nodes || typeof page.nodes !== 'object') return false;
+    if (!Array.isArray(page.order)) return false;
+    for (const id of page.order) {
+      if (!page.nodes[id]) return false;
+    }
+    for (const id of Object.keys(page.nodes)) {
+      const n = page.nodes[id];
+      if (!n || typeof n.id !== 'string' || typeof n.type !== 'string') return false;
+      // Backfill group defaults for forward compatibility
+      if (n.type === 'group') {
+        if (!Array.isArray(n.children)) n.children = [];
+        if (typeof n.innerW !== 'number') n.innerW = n.w;
+        if (typeof n.innerH !== 'number') n.innerH = n.h;
+      }
     }
   }
   return true;

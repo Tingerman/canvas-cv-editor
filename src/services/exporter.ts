@@ -3,34 +3,41 @@ import { Scene } from '@/engine/Scene';
 import { drawNode } from '@/engine/nodes/drawNode';
 import { jsPDF } from 'jspdf';
 
-/** Render the document onto an offscreen canvas (node content only, no UI). */
-export async function renderToCanvas(doc: Document, scale = 2): Promise<HTMLCanvasElement> {
+/** Render a single page onto an offscreen canvas (node content only, no UI). */
+export async function renderPageToCanvas(
+  doc: Document,
+  pageIndex: number,
+  scale = 2
+): Promise<HTMLCanvasElement> {
+  const page = doc.pages[pageIndex];
   const canvas = document.createElement('canvas');
-  canvas.width = Math.floor(doc.page.width * scale);
-  canvas.height = Math.floor(doc.page.height * scale);
+  canvas.width = Math.floor(page.meta.width * scale);
+  canvas.height = Math.floor(page.meta.height * scale);
   const ctx = canvas.getContext('2d')!;
 
   // Preload images BEFORE any drawing so no async gap exists after we set the transform.
-  await preloadImages(doc);
+  await preloadImagesForPage(page.nodes);
 
-  const scene = new Scene(doc);
+  // Temporarily point the scene at the requested page
+  const snapshot: Document = { ...doc, currentPageIndex: pageIndex };
+  const scene = new Scene(snapshot);
 
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
-  ctx.clearRect(0, 0, doc.page.width, doc.page.height);
+  ctx.clearRect(0, 0, page.meta.width, page.meta.height);
 
   // Page background
-  ctx.fillStyle = doc.page.background;
-  ctx.fillRect(0, 0, doc.page.width, doc.page.height);
+  ctx.fillStyle = page.meta.background;
+  ctx.fillRect(0, 0, page.meta.width, page.meta.height);
 
   // Clip to page so overflow is hidden
   ctx.save();
   ctx.beginPath();
-  ctx.rect(0, 0, doc.page.width, doc.page.height);
+  ctx.rect(0, 0, page.meta.width, page.meta.height);
   ctx.clip();
 
   // Draw each top-level node
-  for (const id of doc.order) {
-    const node = doc.nodes[id];
+  for (const id of page.order) {
+    const node = page.nodes[id];
     if (!node || !node.visible) continue;
     ctx.save();
     ctx.globalAlpha = node.opacity;
@@ -48,10 +55,15 @@ export async function renderToCanvas(doc: Document, scale = 2): Promise<HTMLCanv
   return canvas;
 }
 
-function preloadImages(doc: Document): Promise<void> {
-  const srcs = Object.values(doc.nodes)
-    .filter((n): n is any => n.type === 'image' && (n as any).src)
-    .map((n) => (n as any).src as string);
+/** Render the current page (convenience wrapper used by PNG export). */
+export async function renderToCanvas(doc: Document, scale = 2): Promise<HTMLCanvasElement> {
+  return renderPageToCanvas(doc, doc.currentPageIndex, scale);
+}
+
+function preloadImagesForPage(nodes: Record<string, any>): Promise<void> {
+  const srcs = Object.values(nodes)
+    .filter((n): n is any => n.type === 'image' && n.src)
+    .map((n) => n.src as string);
   return Promise.all(
     srcs.map(
       (src) =>
@@ -75,15 +87,25 @@ export async function exportPNG(doc: Document, scale = 2, filename = 'resume.png
 
 export async function exportPDF(doc: Document, filename = 'resume.pdf') {
   const scale = 2;
-  const canvas = await renderToCanvas(doc, scale);
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+  const firstPage = doc.pages[0];
   const pdf = new jsPDF({
-    orientation: doc.page.width < doc.page.height ? 'portrait' : 'landscape',
+    orientation: firstPage.meta.width < firstPage.meta.height ? 'portrait' : 'landscape',
     unit: 'px',
-    format: [doc.page.width, doc.page.height],
+    format: [firstPage.meta.width, firstPage.meta.height],
     hotfixes: ['px_scaling']
   });
-  pdf.addImage(dataUrl, 'JPEG', 0, 0, doc.page.width, doc.page.height);
+
+  for (let i = 0; i < doc.pages.length; i++) {
+    const page = doc.pages[i];
+    const canvas = await renderPageToCanvas(doc, i, scale);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+
+    if (i > 0) {
+      pdf.addPage([page.meta.width, page.meta.height]);
+    }
+    pdf.addImage(dataUrl, 'JPEG', 0, 0, page.meta.width, page.meta.height);
+  }
+
   pdf.save(filename);
 }
 

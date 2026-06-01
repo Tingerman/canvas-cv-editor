@@ -84,7 +84,7 @@ export class Renderer {
     ctx.scale(this.viewport.zoom, this.viewport.zoom);
 
     // Page background + shadow
-    const page = this.scene.doc.page;
+    const page = this.scene.currentPage().meta;
     ctx.save();
     ctx.shadowColor = 'rgba(0,0,0,.15)';
     ctx.shadowBlur = 20;
@@ -100,7 +100,7 @@ export class Renderer {
     ctx.clip();
 
     // Draw nodes in order
-    for (const id of this.scene.doc.order) {
+    for (const id of this.scene.topLevelOrder()) {
       const node = this.scene.getNode(id);
       if (!node || !node.visible) continue;
       this.drawNodeAtWorld(node);

@@ -37,7 +37,9 @@ import LayerRow from './LayerRow.vue';
 const store = useEditorStore();
 const { doc } = storeToRefs(store);
 
-const reversed = computed(() => doc.value.order.slice().reverse());
+const reversed = computed(() =>
+  doc.value.pages[doc.value.currentPageIndex].order.slice().reverse()
+);
 </script>
 
 <style scoped>

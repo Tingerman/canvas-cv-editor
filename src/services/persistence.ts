@@ -1,5 +1,5 @@
 import type { Document } from '@/types/document';
-import { validateDocument } from '@/types/document';
+import { migrateDocument } from '@/types/document';
 
 const KEY = 'cv-editor.document.v1';
 
@@ -17,7 +17,7 @@ export function loadDocument(): Document | null {
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
     const obj = JSON.parse(raw);
-    return validateDocument(obj) ? (obj as Document) : null;
+    return migrateDocument(obj);
   } catch {
     return null;
   }

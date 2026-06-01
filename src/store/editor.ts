@@ -3,9 +3,11 @@ import { ref, computed, shallowRef, triggerRef } from 'vue';
 import {
   createEmptyDocument,
   createNode,
+  migrateDocument,
   uid,
   type AnyNode,
   type Document,
+  type PageData,
   type NodeType,
   type TextNode
 } from '@/types/document';
@@ -25,6 +27,9 @@ export const useEditorStore = defineStore('editor', () => {
 
   // Transaction state: snapshot taken at beginInteraction; commit pushes diff.
   let pendingSnapshot: Document | null = null;
+
+  /** Shortcut to access the active page (mutable). */
+  const cp = (): PageData => doc.value.pages[doc.value.currentPageIndex];
 
   function markDocChanged() {
     triggerRef(doc);
@@ -59,7 +64,8 @@ export const useEditorStore = defineStore('editor', () => {
     if (prev) {
       doc.value = prev;
       markDocChanged();
-      selection.value = selection.value.filter((id) => prev.nodes[id]);
+      const prevNodes = prev.pages[prev.currentPageIndex].nodes;
+      selection.value = selection.value.filter((id) => prevNodes[id]);
       historyVersion.value++;
     }
   }
@@ -68,7 +74,8 @@ export const useEditorStore = defineStore('editor', () => {
     if (next) {
       doc.value = next;
       markDocChanged();
-      selection.value = selection.value.filter((id) => next.nodes[id]);
+      const nextNodes = next.pages[next.currentPageIndex].nodes;
+      selection.value = selection.value.filter((id) => nextNodes[id]);
       historyVersion.value++;
     }
   }
@@ -84,15 +91,15 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   const selectedNodes = computed<AnyNode[]>(() =>
-    selection.value.map((id) => doc.value.nodes[id]).filter((n): n is AnyNode => !!n)
+    selection.value.map((id) => cp().nodes[id]).filter((n): n is AnyNode => !!n)
   );
 
   // ---- node operations ----
   function addNode(type: NodeType, overrides: Partial<AnyNode> = {}) {
     transact('添加' + type, () => {
       const n = createNode(type, overrides);
-      doc.value.nodes[n.id] = n;
-      doc.value.order.push(n.id);
+      cp().nodes[n.id] = n;
+      cp().order.push(n.id);
       selection.value = [n.id];
       markDocChanged();
     });
@@ -106,9 +113,9 @@ export const useEditorStore = defineStore('editor', () => {
         for (const d of collectDescendants(id)) toDelete.add(d);
       }
       for (const id of toDelete) {
-        delete doc.value.nodes[id];
-        const idx = doc.value.order.indexOf(id);
-        if (idx >= 0) doc.value.order.splice(idx, 1);
+        delete cp().nodes[id];
+        const idx = cp().order.indexOf(id);
+        if (idx >= 0) cp().order.splice(idx, 1);
       }
       selection.value = [];
       markDocChanged();
@@ -119,7 +126,7 @@ export const useEditorStore = defineStore('editor', () => {
   function collectDescendants(id: string): string[] {
     const out: string[] = [];
     const visit = (nid: string) => {
-      const n = doc.value.nodes[nid];
+      const n = cp().nodes[nid];
       if (!n) return;
       out.push(nid);
       if (n.type === 'group') {
@@ -133,7 +140,7 @@ export const useEditorStore = defineStore('editor', () => {
   function moveNodes(ids: string[], dx: number, dy: number) {
     if (!dx && !dy) return;
     for (const id of ids) {
-      const n = doc.value.nodes[id];
+      const n = cp().nodes[id];
       if (!n || n.locked) continue;
       n.x += dx;
       n.y += dy;
@@ -147,19 +154,19 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function resizeNode(id: string, patch: Partial<Pick<AnyNode, 'x' | 'y' | 'w' | 'h'>>) {
-    const n = doc.value.nodes[id];
+    const n = cp().nodes[id];
     if (!n || n.locked) return;
     Object.assign(n, patch);
     markDocChanged();
   }
   function rotateNode(id: string, rotation: number) {
-    const n = doc.value.nodes[id];
+    const n = cp().nodes[id];
     if (!n || n.locked) return;
     n.rotation = rotation;
     markDocChanged();
   }
   function updateNode(id: string, patch: Partial<AnyNode>) {
-    const n = doc.value.nodes[id];
+    const n = cp().nodes[id];
     if (!n) return;
     Object.assign(n, patch);
     markDocChanged();
@@ -177,11 +184,11 @@ export const useEditorStore = defineStore('editor', () => {
   let clipboard: ClipboardEntry[] = [];
 
   function snapshotSubtree(id: string): ClipboardEntry | null {
-    const root = doc.value.nodes[id];
+    const root = cp().nodes[id];
     if (!root) return null;
     const subtree: Record<string, AnyNode> = {};
     for (const nid of collectDescendants(id)) {
-      subtree[nid] = JSON.parse(JSON.stringify(doc.value.nodes[nid]));
+      subtree[nid] = JSON.parse(JSON.stringify(cp().nodes[nid]));
     }
     return { root: subtree[id], subtree };
   }
@@ -201,13 +208,13 @@ export const useEditorStore = defineStore('editor', () => {
       if (clone.type === 'group') {
         clone.children = clone.children.map((c) => idMap.get(c) ?? c);
       }
-      doc.value.nodes[clone.id] = clone;
+      cp().nodes[clone.id] = clone;
     }
     const newRootId = idMap.get(entry.root.id)!;
-    const newRoot = doc.value.nodes[newRootId];
+    const newRoot = cp().nodes[newRootId];
     newRoot.x += offset.x;
     newRoot.y += offset.y;
-    doc.value.order.push(newRootId);
+    cp().order.push(newRootId);
     return newRootId;
   }
 
@@ -235,16 +242,15 @@ export const useEditorStore = defineStore('editor', () => {
   // ---- group / ungroup ----
   function group() {
     // Pick currently-selected top-level nodes (at least 2)
-    const topLevelIds = selection.value.filter((id) => doc.value.order.includes(id));
+    const topLevelIds = selection.value.filter((id) => cp().order.includes(id));
     if (topLevelIds.length < 2) return;
 
     transact('组合', () => {
       // Compute union of world AABB
       let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
       for (const id of topLevelIds) {
-        const n = doc.value.nodes[id];
+        const n = cp().nodes[id];
         if (!n) continue;
-        // Use rotation-aware AABB (match Scene.getWorldBounds)
         const b = nodeWorldAABB(n);
         if (b.x < minX) minX = b.x;
         if (b.y < minY) minY = b.y;
@@ -264,11 +270,11 @@ export const useEditorStore = defineStore('editor', () => {
       }) as any;
 
       // Preserve top-level order of selected (for z-index within group)
-      const orderedChildIds = doc.value.order.filter((id) => topLevelIds.includes(id));
+      const orderedChildIds = cp().order.filter((id) => topLevelIds.includes(id));
 
       // Convert children to relative coords and attach
       for (const id of orderedChildIds) {
-        const child = doc.value.nodes[id];
+        const child = cp().nodes[id];
         if (!child) continue;
         child.x -= bounds.x;
         child.y -= bounds.y;
@@ -277,11 +283,11 @@ export const useEditorStore = defineStore('editor', () => {
       groupNode.children = orderedChildIds;
 
       // Remove children from top-level order
-      doc.value.order = doc.value.order.filter((id) => !topLevelIds.includes(id));
+      cp().order = cp().order.filter((id) => !topLevelIds.includes(id));
 
       // Insert group and select it
-      doc.value.nodes[groupNode.id] = groupNode;
-      doc.value.order.push(groupNode.id);
+      cp().nodes[groupNode.id] = groupNode;
+      cp().order.push(groupNode.id);
       selection.value = [groupNode.id];
       markDocChanged();
     });
@@ -289,7 +295,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   function ungroup() {
     const groups = selection.value
-      .map((id) => doc.value.nodes[id])
+      .map((id) => cp().nodes[id])
       .filter((n): n is any => n && n.type === 'group');
     if (!groups.length) return;
 
@@ -303,26 +309,23 @@ export const useEditorStore = defineStore('editor', () => {
         const gCx = g.x + g.w / 2;
         const gCy = g.y + g.h / 2;
 
-        const groupIdx = doc.value.order.indexOf(g.id);
+        const groupIdx = cp().order.indexOf(g.id);
 
         const releasedIds: string[] = [];
         for (const childId of g.children) {
-          const child = doc.value.nodes[childId];
+          const child = cp().nodes[childId];
           if (!child) continue;
 
-          // Inner coords -> outer (apply scale)
           const ox = child.x * sx;
           const oy = child.y * sy;
           const oW = child.w * sx;
           const oH = child.h * sy;
 
-          // Outer coord center offset from group's local center
           const childCxOuter = ox + oW / 2;
           const childCyOuter = oy + oH / 2;
           const relCx = childCxOuter - g.w / 2;
           const relCy = childCyOuter - g.h / 2;
 
-          // Rotate this offset by group.rotation, then translate back to world
           const worldCx = gCx + relCx * cos - relCy * sin;
           const worldCy = gCy + relCx * sin + relCy * cos;
 
@@ -333,8 +336,6 @@ export const useEditorStore = defineStore('editor', () => {
           child.rotation = child.rotation + g.rotation;
           child.parentId = null;
 
-          // For nested groups, update innerW/innerH to match new w/h so inner
-          // drawing keeps the same visual scale.
           if (child.type === 'group') {
             const gChild = child as any;
             gChild.innerW = oW / sx;
@@ -344,9 +345,8 @@ export const useEditorStore = defineStore('editor', () => {
           releasedIds.push(childId);
         }
 
-        // Insert released ids into doc.order at the group's former position
-        doc.value.order.splice(groupIdx, 1, ...releasedIds);
-        delete doc.value.nodes[g.id];
+        cp().order.splice(groupIdx, 1, ...releasedIds);
+        delete cp().nodes[g.id];
         newSelection.push(...releasedIds);
       }
       selection.value = newSelection;
@@ -386,10 +386,10 @@ export const useEditorStore = defineStore('editor', () => {
     if (!selection.value.length) return;
     transact('置顶', () => {
       for (const id of selection.value) {
-        const idx = doc.value.order.indexOf(id);
+        const idx = cp().order.indexOf(id);
         if (idx >= 0) {
-          doc.value.order.splice(idx, 1);
-          doc.value.order.push(id);
+          cp().order.splice(idx, 1);
+          cp().order.push(id);
         }
       }
       markDocChanged();
@@ -399,10 +399,10 @@ export const useEditorStore = defineStore('editor', () => {
     if (!selection.value.length) return;
     transact('置底', () => {
       for (const id of selection.value.slice().reverse()) {
-        const idx = doc.value.order.indexOf(id);
+        const idx = cp().order.indexOf(id);
         if (idx >= 0) {
-          doc.value.order.splice(idx, 1);
-          doc.value.order.unshift(id);
+          cp().order.splice(idx, 1);
+          cp().order.unshift(id);
         }
       }
       markDocChanged();
@@ -412,11 +412,11 @@ export const useEditorStore = defineStore('editor', () => {
     if (!selection.value.length) return;
     transact('上移', () => {
       for (const id of selection.value) {
-        const idx = doc.value.order.indexOf(id);
-        if (idx >= 0 && idx < doc.value.order.length - 1) {
-          [doc.value.order[idx], doc.value.order[idx + 1]] = [
-            doc.value.order[idx + 1],
-            doc.value.order[idx]
+        const idx = cp().order.indexOf(id);
+        if (idx >= 0 && idx < cp().order.length - 1) {
+          [cp().order[idx], cp().order[idx + 1]] = [
+            cp().order[idx + 1],
+            cp().order[idx]
           ];
         }
       }
@@ -427,11 +427,11 @@ export const useEditorStore = defineStore('editor', () => {
     if (!selection.value.length) return;
     transact('下移', () => {
       for (const id of selection.value) {
-        const idx = doc.value.order.indexOf(id);
+        const idx = cp().order.indexOf(id);
         if (idx > 0) {
-          [doc.value.order[idx], doc.value.order[idx - 1]] = [
-            doc.value.order[idx - 1],
-            doc.value.order[idx]
+          [cp().order[idx], cp().order[idx - 1]] = [
+            cp().order[idx - 1],
+            cp().order[idx]
           ];
         }
       }
@@ -441,37 +441,129 @@ export const useEditorStore = defineStore('editor', () => {
 
   function reorder(newOrder: string[]) {
     transact('调整图层顺序', () => {
-      doc.value.order = newOrder;
+      cp().order = newOrder;
       markDocChanged();
     });
   }
 
   function toggleLock(id: string) {
     transact('锁定', () => {
-      const n = doc.value.nodes[id];
+      const n = cp().nodes[id];
       if (n) n.locked = !n.locked;
       markDocChanged();
     });
   }
   function toggleVisible(id: string) {
     transact('显隐', () => {
-      const n = doc.value.nodes[id];
+      const n = cp().nodes[id];
       if (n) n.visible = !n.visible;
       markDocChanged();
     });
   }
   function renameNode(id: string, name: string) {
     transact('重命名', () => {
-      const n = doc.value.nodes[id];
+      const n = cp().nodes[id];
       if (n) n.name = name;
       markDocChanged();
     });
   }
 
+  // ---- alignment ----
+  function alignNodes(direction: AlignDirection) {
+    // Only operate on top-level, unlocked nodes that are currently selected
+    const order = cp().order;
+    const targets = selection.value
+      .filter((id) => order.includes(id))
+      .map((id) => cp().nodes[id])
+      .filter((n): n is AnyNode => !!n && !n.locked);
+    if (targets.length < 2) return;
+
+    transact('对齐', () => {
+      const bboxes = targets.map((n) => nodeWorldAABB(n));
+      const minX = Math.min(...bboxes.map((b) => b.x));
+      const minY = Math.min(...bboxes.map((b) => b.y));
+      const maxX = Math.max(...bboxes.map((b) => b.x + b.w));
+      const maxY = Math.max(...bboxes.map((b) => b.y + b.h));
+      const unionW = maxX - minX;
+      const unionH = maxY - minY;
+
+      if (direction === 'distributeH') {
+        if (targets.length < 3) return;
+        const sorted = [...targets].sort((a, b) => a.x - b.x);
+        const totalNodeW = sorted.reduce((s, n) => s + n.w, 0);
+        const gap = (unionW - totalNodeW) / (sorted.length - 1);
+        let cursor = minX;
+        for (const n of sorted) {
+          n.x = cursor;
+          cursor += n.w + gap;
+        }
+      } else if (direction === 'distributeV') {
+        if (targets.length < 3) return;
+        const sorted = [...targets].sort((a, b) => a.y - b.y);
+        const totalNodeH = sorted.reduce((s, n) => s + n.h, 0);
+        const gap = (unionH - totalNodeH) / (sorted.length - 1);
+        let cursor = minY;
+        for (const n of sorted) {
+          n.y = cursor;
+          cursor += n.h + gap;
+        }
+      } else {
+        for (const n of targets) {
+          if (direction === 'left')    n.x = minX;
+          if (direction === 'centerH') n.x = minX + unionW / 2 - n.w / 2;
+          if (direction === 'right')   n.x = maxX - n.w;
+          if (direction === 'top')     n.y = minY;
+          if (direction === 'centerV') n.y = minY + unionH / 2 - n.h / 2;
+          if (direction === 'bottom')  n.y = maxY - n.h;
+        }
+      }
+      markDocChanged();
+    });
+  }
+
+  // ---- page management ----
+  function addPage() {
+    transact('新增页面', () => {
+      const firstPage = doc.value.pages[0];
+      doc.value.pages.push({
+        id: uid('p'),
+        meta: { ...firstPage.meta },
+        nodes: {},
+        order: []
+      });
+      doc.value.currentPageIndex = doc.value.pages.length - 1;
+      selection.value = [];
+      markDocChanged();
+    });
+  }
+
+  function deletePage(index: number) {
+    if (doc.value.pages.length <= 1) return; // guard: never delete last page
+    transact('删除页面', () => {
+      doc.value.pages.splice(index, 1);
+      doc.value.currentPageIndex = Math.min(
+        doc.value.currentPageIndex,
+        doc.value.pages.length - 1
+      );
+      selection.value = [];
+      markDocChanged();
+    });
+  }
+
+  function switchPage(index: number) {
+    if (index === doc.value.currentPageIndex) return;
+    if (index < 0 || index >= doc.value.pages.length) return;
+    doc.value.currentPageIndex = index;
+    selection.value = [];
+    markDocChanged();
+  }
+
   // ---- document I/O ----
-  function replaceDocument(newDoc: Document, historyLabel = '替换文档') {
+  function replaceDocument(newDoc: Document | any, historyLabel = '替换文档') {
+    const migrated = migrateDocument(newDoc) ?? newDoc;
     transact(historyLabel, () => {
-      doc.value = newDoc;
+      doc.value = migrated;
+      doc.value.currentPageIndex = 0;
       selection.value = [];
       markDocChanged();
     });
@@ -480,7 +572,6 @@ export const useEditorStore = defineStore('editor', () => {
     const prevZoom = zoom.value;
     zoom.value = Math.max(0.1, Math.min(4, z));
     if (anchor) {
-      // keep anchor stable under the cursor
       pan.value = {
         x: pan.value.x - anchor.x * (zoom.value - prevZoom),
         y: pan.value.y - anchor.y * (zoom.value - prevZoom)
@@ -536,6 +627,12 @@ export const useEditorStore = defineStore('editor', () => {
     toggleLock,
     toggleVisible,
     renameNode,
+    // pages
+    addPage,
+    deletePage,
+    switchPage,
+    // alignment
+    alignNodes,
     // document
     replaceDocument,
     setZoom,
@@ -545,3 +642,8 @@ export const useEditorStore = defineStore('editor', () => {
 });
 
 export type TextNodeUpdater = Partial<TextNode>;
+
+export type AlignDirection =
+  | 'left' | 'centerH' | 'right'
+  | 'top'  | 'centerV' | 'bottom'
+  | 'distributeH' | 'distributeV';

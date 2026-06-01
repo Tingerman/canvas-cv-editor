@@ -51,7 +51,7 @@ const props = defineProps<{ id: string; depth: number }>();
 const store = useEditorStore();
 const { doc, selection } = storeToRefs(store);
 
-const node = computed(() => doc.value.nodes[props.id]);
+const node = computed(() => doc.value.pages[doc.value.currentPageIndex].nodes[props.id]);
 const expanded = ref(true);
 
 const reversedChildren = computed(() => {
@@ -82,9 +82,10 @@ function onClick(e: MouseEvent) {
 }
 
 function topLevelAncestor(id: string): string {
-  let cur = doc.value.nodes[id];
+  const nodes = doc.value.pages[doc.value.currentPageIndex].nodes;
+  let cur = nodes[id];
   while (cur && cur.parentId) {
-    cur = doc.value.nodes[cur.parentId];
+    cur = nodes[cur.parentId];
   }
   return cur ? cur.id : id;
 }

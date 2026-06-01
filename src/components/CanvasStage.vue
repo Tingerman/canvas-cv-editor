@@ -117,7 +117,7 @@ function computeSelectionBounds() {
 
 // ---- Text editing overlay ----
 async function startTextEdit(id: string) {
-  const node = doc.value.nodes[id];
+  const node = doc.value.pages[doc.value.currentPageIndex].nodes[id];
   if (!node || node.type !== 'text') return;
   editingId.value = id;
   editingInitialHTML.value = textNodeToHTML(node);
@@ -185,7 +185,7 @@ function buildOverlayStyle(node: TextNode): Record<string, string> {
 function commitTextEdit() {
   if (!editingId.value || !editorEl.value) return;
   const id = editingId.value;
-  const node = doc.value.nodes[id];
+  const node = doc.value.pages[doc.value.currentPageIndex].nodes[id];
   if (!node || node.type !== 'text') return;
   const runs = htmlToRuns(editorEl.value);
   store.updateNode(id, { runs } as any);

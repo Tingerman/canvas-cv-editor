@@ -1,4 +1,4 @@
-import type { AnyNode, Document } from '@/types/document';
+import type { AnyNode, Document, PageData } from '@/types/document';
 import type { Bounds } from './utils/geometry';
 import * as M from './utils/matrix';
 
@@ -24,12 +24,24 @@ export class Scene {
     this.dirty = true;
   }
 
+  currentPage(): PageData {
+    return this.doc.pages[this.doc.currentPageIndex];
+  }
+
+  get nodes(): Record<string, AnyNode> {
+    return this.currentPage().nodes;
+  }
+
+  get order(): string[] {
+    return this.currentPage().order;
+  }
+
   getNode(id: string): AnyNode | undefined {
-    return this.doc.nodes[id];
+    return this.currentPage().nodes[id];
   }
 
   topLevelOrder(): string[] {
-    return this.doc.order;
+    return this.currentPage().order;
   }
 
   /** World bounds of a node (AABB after rotation). */

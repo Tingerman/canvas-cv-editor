@@ -65,7 +65,7 @@ export interface DeepHit {
 
 /** Deep hit test: returns the top-level node and the leaf descendant that was hit. */
 export function hitTestDeep(scene: Scene, wx: number, wy: number): DeepHit | null {
-  const order = scene.doc.order;
+  const order = scene.topLevelOrder();
   for (let i = order.length - 1; i >= 0; i--) {
     const node = scene.getNode(order[i]);
     if (!node || !node.visible) continue;
@@ -117,7 +117,7 @@ export function hitTestHandle(
 
 export function nodesInBounds(scene: Scene, box: { x: number; y: number; w: number; h: number }) {
   const hits: AnyNode[] = [];
-  for (const id of scene.doc.order) {
+  for (const id of scene.topLevelOrder()) {
     const node = scene.getNode(id);
     if (!node || !node.visible || node.locked) continue;
     const b = scene.getWorldBounds(node);

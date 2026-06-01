@@ -30,7 +30,7 @@
           <div class="section-title">页面</div>
           <div class="col">
             <label>背景色</label>
-            <input type="color" :value="doc.page.background" @input="setPageBg(($event.target as HTMLInputElement).value)" />
+            <input type="color" :value="doc.pages[doc.currentPageIndex].meta.background" @input="setPageBg(($event.target as HTMLInputElement).value)" />
           </div>
         </section>
       </template>
@@ -62,7 +62,7 @@ function update(key: string, value: any) {
 
 function setPageBg(v: string) {
   store.transact('修改页面背景', () => {
-    doc.value.page.background = v;
+    doc.value.pages[doc.value.currentPageIndex].meta.background = v;
     store.markDocChanged();
   });
 }
